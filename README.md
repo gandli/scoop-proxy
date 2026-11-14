@@ -28,6 +28,7 @@ Currently included:
 | [ClashMi](https://github.com/KaringX/clashmi) | 1.0.32.1803 | Clash Mihomo for iOS/MacOS/Android/Windows/Linux (64bit) |
 | [clashtui](https://github.com/JohanChane/clashtui) | 0.3.1 | mihomo / sing-box TUI client |
 | [Tailscale](https://tailscale.com) | 1.104.7 | WireGuard-based mesh VPN (requires admin) |
+| [NetBird](https://netbird.io/) | 0.83.1 | WireGuard-based overlay network with SSO/MFA |
 
 ## Usage
 
