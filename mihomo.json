@@ -1,0 +1,54 @@
+{
+    "version": "1.19.34",
+    "description": "A closed-source reborn of Clash Meta / universal proxy core.",
+    "homepage": "https://github.com/MetaCubeX/mihomo",
+    "license": {
+        "identifier": "GPL-3.0-or-later",
+        "url": "https://github.com/MetaCubeX/mihomo/blob/Alpha/LICENSE"
+    },
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-windows-amd64-v1.19.34.zip",
+            "hash": "f6b855de8722781caea62686f0301f89625fc558d48c1103ffdd98dad7f7f488",
+            "bin": [
+                [
+                    "mihomo-windows-amd64.exe",
+                    "mihomo.exe"
+                ]
+            ]
+        },
+        "arm64": {
+            "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-windows-arm64-v1.19.34.zip",
+            "hash": "076cb04a21377675bcf009b8d1dd83006ce2464aa537e37bce1faf6d3504f554",
+            "bin": [
+                [
+                    "mihomo-windows-arm64.exe",
+                    "mihomo.exe"
+                ]
+            ]
+        }
+    },
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/MetaCubeX/mihomo/releases/download/v$version/mihomo-windows-amd64-v$version.zip",
+                "bin": [
+                    [
+                        "mihomo-windows-amd64.exe",
+                        "mihomo.exe"
+                    ]
+                ]
+            },
+            "arm64": {
+                "url": "https://github.com/MetaCubeX/mihomo/releases/download/v$version/mihomo-windows-arm64-v$version.zip",
+                "bin": [
+                    [
+                        "mihomo-windows-arm64.exe",
+                        "mihomo.exe"
+                    ]
+                ]
+            }
+        }
+    }
+}

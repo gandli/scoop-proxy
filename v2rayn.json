@@ -1,0 +1,45 @@
+{
+    "version": "7.25.6",
+    "description": "A GUI proxy client for Windows, supporting Xray, sing-box and mihomo cores.",
+    "homepage": "https://github.com/2dust/v2rayN",
+    "license": {
+        "identifier": "GPL-3.0",
+        "url": "https://github.com/2dust/v2rayN/blob/master/LICENSE"
+    },
+    "notes": [
+        "TUN mode and system proxy takeover may require running v2rayN as Administrator.",
+        "Xray, sing-box and mihomo cores are bundled in the 'bin' subdirectory of the app folder."
+    ],
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/2dust/v2rayN/releases/download/7.25.6/v2rayN-windows-64.zip",
+            "hash": "9b94718c2a214a246b04dec84b9a27f1f0ced8489c2dd25eb80a0fbb806bd13f",
+            "extract_dir": "v2rayN-windows-64"
+        },
+        "arm64": {
+            "url": "https://github.com/2dust/v2rayN/releases/download/7.25.6/v2rayN-windows-arm64.zip",
+            "hash": "4f01badc9bb3a1fd805104192d54f06d69b0d122ffbf884f521242619ad42f3",
+            "extract_dir": "v2rayN-windows-arm64"
+        }
+    },
+    "bin": "v2rayN.exe",
+    "shortcuts": [
+        [
+            "v2rayN.exe",
+            "v2rayN"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/2dust/v2rayN/releases/download/$version/v2rayN-windows-64.zip",
+                "extract_dir": "v2rayN-windows-64"
+            },
+            "arm64": {
+                "url": "https://github.com/2dust/v2rayN/releases/download/$version/v2rayN-windows-arm64.zip",
+                "extract_dir": "v2rayN-windows-arm64"
+            }
+        }
+    }
+}
