@@ -4,7 +4,7 @@
     "homepage": "https://uuyc.163.com/",
     "license": "Freeware",
     "notes": [
-        "The app is installed by the vendor NSIS installer into 'C:\Program Files\Netease\GameViewer' and registers the GameViewerService system service.",
+        "The app is installed by the vendor NSIS installer into 'C:\\Program Files\\Netease\\GameViewer' and registers the GameViewerService system service.",
         "The app UI requires the Microsoft Edge WebView2 Runtime."
     ],
     "url": "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd#/UURemote_Setup.exe",
