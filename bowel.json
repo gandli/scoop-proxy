@@ -12,11 +12,11 @@
     ],
     "architecture": {
         "64bit": {
-            "url": "https://github.com/21stware/bowel/releases/download/v$version/bowel-$version-windows-amd64.tar.gz",
+            "url": "https://github.com/21stware/bowel/releases/download/v0.4.3/bowel-0.4.3-windows-amd64.tar.gz",
             "hash": "7d743b1fe22a9310fe9800efd1adc38958873bf4a632f093a93a88b55b537200"
         },
         "arm64": {
-            "url": "https://github.com/21stware/bowel/releases/download/v$version/bowel-$version-windows-arm64.tar.gz",
+            "url": "https://github.com/21stware/bowel/releases/download/v0.4.3/bowel-0.4.3-windows-arm64.tar.gz",
             "hash": "9ea40d2c5829882d8eb4c28c2eb1416d8eca50661bd752c965652e92121b0eda"
         }
     },
