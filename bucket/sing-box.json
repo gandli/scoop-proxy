@@ -6,6 +6,18 @@
         "identifier": "GPL-3.0-or-later",
         "url": "https://github.com/SagerNet/sing-box/blob/testing/LICENSE"
     },
+    "notes": [
+        "If you want to use TUN mode, please run sing-box with administrator privileges.",
+        "Your configuration and cache files are persisted in '$persist_dir'.",
+        "You can run with a directory of configs using: 'sing-box run -C $persist_dir\\config.d'"
+    ],
+    "pre_install": [
+        "if (!(Test-Path \"$persist_dir\")) { New-Item -Path \"$persist_dir\" -ItemType Directory | Out-Null }",
+        "if (!(Test-Path \"$persist_dir\\config.json\")) {",
+        "    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)",
+        "    [System.IO.File]::WriteAllText(\"$persist_dir\\config.json\", \"{}\\n\", $utf8NoBom)",
+        "}"
+    ],
     "architecture": {
         "64bit": {
             "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.4/sing-box-1.14.4-windows-amd64.zip",
@@ -20,6 +32,13 @@
             "bin": "sing-box.exe"
         }
     },
+    "bin": "sing-box.exe",
+    "persist": [
+        "config",
+        "config.d",
+        "config.json",
+        "cache.db"
+    ],
     "checkver": "github",
     "autoupdate": {
         "architecture": {
