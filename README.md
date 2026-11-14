@@ -19,6 +19,14 @@ Currently included:
 | [Karing](https://github.com/KaringX/karing) | 1.2.26.2931 | cross-platform client compatible with Clash / Singbox / Shadowrocket subscriptions |
 | [GUI.for.Clash](https://github.com/GUI-for-Cores/GUI.for.Clash) | 1.29.0 | lightweight Lua-based mihomo GUI |
 | [GUI.for.SingBox](https://github.com/GUI-for-Cores/GUI.for.SingBox) | 1.29.0 | lightweight Lua-based sing-box GUI |
+| [Throne](https://github.com/throneproj/Throne) | 1.4.1 | cross-platform GUI proxy utility powered by sing-box (Nekoray successor) |
+| [Husi](https://github.com/xchacha20-poly1305/husi) | 2.3.4 | sing-box GUI client with bundled JBR runtime (64bit) |
+| [SFW](https://sing-box.sagernet.org/clients/desktop/) | 1.14.4 | official Windows GUI client for sing-box |
+| [v2ray](https://github.com/v2fly/v2ray-core) | 5.53.0 | the Project V v2ray core |
+| [Clash.Mini](https://github.com/MetaCubeX/Clash.Mini) | 0.2.2 | a simple mihomo GUI |
+| [Pandora-Box](https://github.com/snakem982/Pandora-Box) | 1.0.26 | a simple mihomo desktop client |
+| [ClashMi](https://github.com/KaringX/clashmi) | 1.0.32.1803 | Clash Mihomo for iOS/MacOS/Android/Windows/Linux (64bit) |
+| [clashtui](https://github.com/JohanChane/clashtui) | 0.3.1 | mihomo / sing-box TUI client |
 
 ## Usage
 
