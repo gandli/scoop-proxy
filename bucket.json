@@ -2,7 +2,67 @@
     "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/refs/heads/main/schema/bucket.json",
     "bowel": {
         "name": "bowel",
-        "manifest": "bowel.json",
+        "manifest": "bucket/bowel.json",
         "description": "A mihomo client for macOS, Windows, Linux and Android."
+    },
+    "mihomo": {
+        "name": "mihomo",
+        "manifest": "bucket/mihomo.json",
+        "description": "The mihomo (Clash Meta) core."
+    },
+    "sing-box": {
+        "name": "sing-box",
+        "manifest": "bucket/sing-box.json",
+        "description": "The sing-box core."
+    },
+    "xray": {
+        "name": "xray",
+        "manifest": "bucket/xray.json",
+        "description": "The Xray core."
+    },
+    "v2rayn": {
+        "name": "v2rayn",
+        "manifest": "bucket/v2rayn.json",
+        "description": "A GUI proxy client for Windows, supporting Xray, sing-box and mihomo cores."
+    },
+    "flclash": {
+        "name": "flclash",
+        "manifest": "bucket/flclash.json",
+        "description": "FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter."
+    },
+    "clash-verge-rev": {
+        "name": "clash-verge-rev",
+        "manifest": "bucket/clash-verge-rev.json",
+        "description": "Continuation of Clash Verge - A Clash Meta GUI based on Tauri."
+    },
+    "clash-party": {
+        "name": "clash-party",
+        "manifest": "bucket/clash-party.json",
+        "description": "Another Mihomo GUI."
+    },
+    "sparkle": {
+        "name": "sparkle",
+        "manifest": "bucket/sparkle.json",
+        "description": "A Mihomo Party fork."
+    },
+    "clash-nyanpasu": {
+        "name": "clash-nyanpasu",
+        "manifest": "bucket/clash-nyanpasu.json",
+        "description": "A Clash GUI based on Tauri."
+    },
+    "karing": {
+        "name": "karing",
+        "manifest": "bucket/karing.json",
+        "description": "A cross-platform proxy client compatible with Clash, Singbox and Shadowrocket subscription formats."
+    },
+    "gui-for-clash": {
+        "name": "gui-for-clash",
+        "manifest": "bucket/gui-for-clash.json",
+        "description": "A lightweight Lua-based mihomo GUI."
+    },
+    "gui-for-singbox": {
+        "name": "gui-for-singbox",
+        "manifest": "bucket/gui-for-singbox.json",
+        "description": "A lightweight Lua-based sing-box GUI."
     }
 }
