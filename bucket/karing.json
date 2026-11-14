@@ -22,11 +22,15 @@
             "Karing"
         ]
     ],
-    "checkver": "github",
+    "checkver": {
+        "url": "https://api.github.com/repos/KaringX/karing/releases/latest",
+        "regex": "\"name\":\\s*\"karing_([\\d.]+)_windows_x64\\.zip\"[\\s\\S]*?\"digest\":\\s*\"sha256:([0-9a-f]{64})\""
+    },
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip"
+                "url": "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip",
+                "hash": "$match2"
             }
         }
     }

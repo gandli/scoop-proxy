@@ -30,16 +30,25 @@ jobs:
       - name: Fill hashes for updated manifests
         shell: pwsh
         run: |
+          function Get-UrlHash([string]$url) {
+            $tmp = Join-Path $env:TEMP ([IO.Path]::GetFileName(($url -split '#')[0]))
+            Invoke-WebRequest -Uri ($url -split '#')[0] -OutFile $tmp -UserAgent 'Scoop'
+            $h = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
+            Remove-Item $tmp -Force
+            return $h
+          }
           $changed = @(git status --porcelain bucket) | ForEach-Object { $_.Substring(3).Trim() }
           foreach ($file in $changed) {
             "Computing hashes for $file"
             $m = Get-Content $file -Raw | ConvertFrom-Json
+            # top-level url (installer-style manifests, e.g. uu-remote)
+            if ($m.PSObject.Properties['url'] -and -not $m.hash) {
+              $m | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $m.url) -Force
+            }
             foreach ($prop in $m.architecture.PSObject.Properties) {
-              $url = ($prop.Value.url -split '#')[0]
-              $tmp = Join-Path $env:TEMP ([IO.Path]::GetFileName($url))
-              Invoke-WebRequest -Uri $url -OutFile $tmp -UserAgent 'Scoop'
-              $prop.Value.hash = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
-              Remove-Item $tmp -Force
+              if (-not $prop.Value.hash) {
+                $prop.Value | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $prop.Value.url) -Force
+              }
             }
             $m | ConvertTo-Json -Depth 32 | Set-Content $file -Encoding utf8NoBOM
           }
