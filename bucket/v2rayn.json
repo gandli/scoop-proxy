@@ -18,7 +18,7 @@
         },
         "arm64": {
             "url": "https://github.com/2dust/v2rayN/releases/download/7.25.6/v2rayN-windows-arm64.zip",
-            "hash": "4f01badc9bb3a1fd805104192d54f06d69b0d122ffbf884f521242619ad42f3",
+            "hash": "4f01badc9bb3a1fd805104192d54f06d69b0d122ffbff884f521242619ad42f3",
             "extract_dir": "v2rayN-windows-arm64"
         }
     },
