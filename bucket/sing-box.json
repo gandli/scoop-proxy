@@ -4,7 +4,7 @@
     "homepage": "https://github.com/SagerNet/sing-box",
     "license": {
         "identifier": "GPL-3.0-or-later",
-        "url": "https://github.com/SagerNet/sing-box/blob/dev-next/LICENSE"
+        "url": "https://github.com/SagerNet/sing-box/blob/testing/LICENSE"
     },
     "notes": [
         "If you want to use TUN mode, please run sing-box with administrator privileges.",

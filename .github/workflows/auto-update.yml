@@ -56,7 +56,7 @@ jobs:
                 $prop.Value | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $prop.Value.url) -Force
               }
             }
-            $json = $m | ConvertTo-Json -Depth 32
+            $json = ($m | ConvertTo-Json -Depth 32) + "`r`n"
             [IO.File]::WriteAllText((Resolve-Path $file).Path, $json, (New-Object System.Text.UTF8Encoding($false)))
           }
 
