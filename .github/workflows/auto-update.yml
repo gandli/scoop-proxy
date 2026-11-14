@@ -1,0 +1,40 @@
+name: Auto-update manifests
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          irm get.scoop.sh -OutFile install-scoop.ps1
+          .\install-scoop.ps1 -RunAsAdmin
+          Remove-Item .\install-scoop.ps1
+
+      - name: Update manifests
+        shell: pwsh
+        run: |
+          scoop bucket add bowel "$env:GITHUB_WORKSPACE"
+          scoop update bowel/bowel
+
+      - name: Commit changes
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bowel.json
+          if (-not (git diff --cached --quiet)) {
+            $version = (Get-Content bowel.json | ConvertFrom-Json).version
+            git commit -m "bowel: Update to version $version"
+            git push
+          }

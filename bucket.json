@@ -1,0 +1,8 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/refs/heads/main/schema/bucket.json",
+    "bowel": {
+        "name": "bowel",
+        "manifest": "bowel.json",
+        "description": "A mihomo client for macOS, Windows, Linux and Android."
+    }
+}
