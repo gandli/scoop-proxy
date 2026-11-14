@@ -1,0 +1,37 @@
+{
+    "version": "2.3.4",
+    "description": "Husi is a non-professional proxy-set-based multiplatform proxy tool set and dashboard.",
+    "homepage": "https://github.com/xchacha20-poly1305/husi",
+    "license": {
+        "identifier": "GPL-3.0-or-later",
+        "url": "https://github.com/xchacha20-poly1305/husi/blob/dev/LICENSE"
+    },
+    "notes": [
+        "The JetBrains Runtime is bundled in the 'runtime' subdirectory of the app folder.",
+        "The sing-box core is bundled as 'husi-core.exe' in the app folder.",
+        "TUN mode and system proxy takeover may require running Husi as Administrator."
+    ],
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/xchacha20-poly1305/husi/releases/download/v2.3.4/fr.husi-2.3.4-windows-amd64-jbr.zip",
+            "hash": "fa7d8ca4fb3c34192ef43781102e6de7c09307600196bc27f91374b48235bc5d"
+        }
+    },
+    "extract_dir": "Husi-2.3.4-windows-amd64-jbr",
+    "bin": "Husi.exe",
+    "shortcuts": [
+        [
+            "Husi.exe",
+            "Husi"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/xchacha20-poly1305/husi/releases/download/v$version/fr.husi-$version-windows-amd64-jbr.zip"
+            }
+        },
+        "extract_dir": "Husi-$version-windows-amd64-jbr"
+    }
+}
