@@ -29,8 +29,7 @@
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip",
-                "hash": "$match2"
+                "url": "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip"
             }
         }
     }

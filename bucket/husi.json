@@ -32,8 +32,7 @@
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/xchacha20-poly1305/husi/releases/download/v$version/fr.husi-$version-windows-amd64-jbr.zip",
-                "hash": "$match2"
+                "url": "https://github.com/xchacha20-poly1305/husi/releases/download/v$version/fr.husi-$version-windows-amd64-jbr.zip"
             }
         },
         "extract_dir": "Husi-$version-windows-amd64-jbr"
