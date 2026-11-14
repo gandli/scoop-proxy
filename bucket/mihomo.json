@@ -13,7 +13,7 @@
             "bin": [
                 [
                     "mihomo-windows-amd64.exe",
-                    "mihomo.exe"
+                    "mihomo"
                 ]
             ]
         },
@@ -23,7 +23,7 @@
             "bin": [
                 [
                     "mihomo-windows-arm64.exe",
-                    "mihomo.exe"
+                    "mihomo"
                 ]
             ]
         }
@@ -36,7 +36,7 @@
                 "bin": [
                     [
                         "mihomo-windows-amd64.exe",
-                        "mihomo.exe"
+                        "mihomo"
                     ]
                 ]
             },
@@ -45,7 +45,7 @@
                 "bin": [
                     [
                         "mihomo-windows-arm64.exe",
-                        "mihomo.exe"
+                        "mihomo"
                     ]
                 ]
             }
