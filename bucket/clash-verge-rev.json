@@ -37,7 +37,13 @@
         "}"
     ],
     "uninstaller": {
-        "script": "Remove-Item \"$env:APPDATA\\io.github.clash-verge-rev.clash-verge-rev\" -Recurse -Force -ErrorAction 'SilentlyContinue'"
+        "script": [
+            "$p = \"$env:APPDATA\\io.github.clash-verge-rev.clash-verge-rev\"",
+            "if (Test-Path $p) {",
+            "    $item = Get-Item $p -Force",
+            "    if ($item.LinkType) { $item.Delete() } else { Remove-Item $p -Recurse -Force -ErrorAction 'SilentlyContinue' }",
+            "}"
+        ]
     },
     "shortcuts": [
         [

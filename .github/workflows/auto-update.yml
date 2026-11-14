@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: auto-update
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: windows-latest
@@ -22,13 +26,15 @@ jobs:
           Remove-Item .\install-scoop.ps1
 
       - name: Update manifests
-        shell: pwsh
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
           & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update
 
       - name: Fill hashes for updated manifests
-        shell: pwsh
+        shell: powershell
         run: |
           function Get-UrlHash([string]$url) {
             $tmp = Join-Path $env:TEMP ([IO.Path]::GetFileName(($url -split '#')[0]))
@@ -50,7 +56,8 @@ jobs:
                 $prop.Value | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $prop.Value.url) -Force
               }
             }
-            $m | ConvertTo-Json -Depth 32 | Set-Content $file -Encoding utf8NoBOM
+            $json = $m | ConvertTo-Json -Depth 32
+            [IO.File]::WriteAllText((Resolve-Path $file).Path, $json, (New-Object System.Text.UTF8Encoding($false)))
           }
 
       - name: Commit changes

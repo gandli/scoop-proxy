@@ -4,6 +4,7 @@
     "homepage": "https://tailscale.com",
     "license": "BSD-3-Clause",
     "notes": [
+        "Administrator privileges are required for the Tailscale daemon and startup task; without them only the CLI/GUI binaries are usable.",
         "Start Tailscale with Windows by running:",
         "reg import \"$dir\\add-startup.reg\""
     ],
@@ -21,14 +22,18 @@
     },
     "pre_install": "if (!(is_admin)) { error 'This package requires admin rights to install'; break }",
     "post_install": [
+        "if (!(is_admin)) { Write-Host 'NOTE: Tailscale daemon and startup task were skipped because administrator privileges are required. Reinstall from an elevated shell to enable them.'; return }",
         "tailscaled.exe install-system-daemon",
-        "$dirpath = $dir.Replace('\\', '\\\\')",
-        "'add-startup.reg', 'remove-startup.reg' | ForEach-Object {",
-        "    if (Test-Path \"$bucketsdir\\proxy\\scripts\\tailscale\\$_\") {",
-        "        $content = Get-Content \"$bucketsdir\\proxy\\scripts\\tailscale\\$_\"",
-        "        $content = $content.Replace('$dir', $dirpath)",
-        "        if ($global) { $content = $content.Replace('HKEY_CURRENT_USER', 'HKEY_LOCAL_MACHINE') }",
-        "        $content | Set-Content -Path \"$dir\\$_\"",
+        "$bucketScripts = (Get-ChildItem \"$bucketsdir\\*\\scripts\\tailscale\" -Directory -ErrorAction 'SilentlyContinue' | Select-Object -First 1).FullName",
+        "if ($bucketScripts) {",
+        "    $dirpath = $dir.Replace('\\', '\\\\')",
+        "    'add-startup.reg', 'remove-startup.reg' | ForEach-Object {",
+        "        if (Test-Path \"$bucketScripts\\$_\") {",
+        "            $content = Get-Content \"$bucketScripts\\$_\"",
+        "            $content = $content.Replace('$dir', $dirpath)",
+        "            if ($global) { $content = $content.Replace('HKEY_CURRENT_USER', 'HKEY_LOCAL_MACHINE') }",
+        "            $content | Set-Content -Path \"$dir\\$_\"",
+        "        }",
         "    }",
         "}"
     ],
@@ -40,7 +45,7 @@
     "uninstaller": {
         "script": [
             "tailscaled.exe uninstall-system-daemon",
-            "if ($cmd -eq 'uninstall') { reg import \"$dir\\remove-startup.reg\" }"
+            "if ((Test-Path \"$dir\\remove-startup.reg\") -and ($cmd -eq 'uninstall')) { reg import \"$dir\\remove-startup.reg\" }"
         ]
     },
     "bin": [

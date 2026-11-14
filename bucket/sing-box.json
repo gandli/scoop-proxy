@@ -4,7 +4,7 @@
     "homepage": "https://github.com/SagerNet/sing-box",
     "license": {
         "identifier": "GPL-3.0-or-later",
-        "url": "https://github.com/SagerNet/sing-box/blob/testing/LICENSE"
+        "url": "https://github.com/SagerNet/sing-box/blob/dev-next/LICENSE"
     },
     "notes": [
         "If you want to use TUN mode, please run sing-box with administrator privileges.",
@@ -15,7 +15,7 @@
         "if (!(Test-Path \"$persist_dir\")) { New-Item -Path \"$persist_dir\" -ItemType Directory | Out-Null }",
         "if (!(Test-Path \"$persist_dir\\config.json\")) {",
         "    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)",
-        "    [System.IO.File]::WriteAllText(\"$persist_dir\\config.json\", \"{}\\n\", $utf8NoBom)",
+        "    [System.IO.File]::WriteAllText(\"$persist_dir\\config.json\", \"{}\", $utf8NoBom)",
         "}"
     ],
     "architecture": {

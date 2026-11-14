@@ -19,7 +19,9 @@
     },
     "pre_install": "Get-ChildItem \"$dir\" -Filter 'clashtui*.exe' | Rename-Item -NewName 'clashtui.exe'",
     "bin": "clashtui.exe",
-    "pre_uninstall": "clashtui may have installed a service (requires admin). Run 'clashtui.exe' in its install dir and choose 'Uninstall Service' before removing this package if service mode was enabled.",
+    "notes": [
+        "clashtui may have installed a service (requires admin). Run 'clashtui.exe' in its install dir and choose 'Uninstall Service' before removing this package if service mode was enabled."
+    ],
     "checkver": {
         "github": "https://github.com/JohanChane/clashtui"
     },

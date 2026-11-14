@@ -1,0 +1,8 @@
+* text=auto
+*.json text eol=crlf
+*.ps1 text eol=crlf
+*.md text eol=crlf
+*.reg text eol=crlf
+*.editorconfig text eol=crlf
+*.yml text eol=lf
+*.yaml text eol=lf
