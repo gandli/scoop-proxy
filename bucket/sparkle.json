@@ -4,7 +4,7 @@
     "homepage": "https://github.com/xishang0128/sparkle",
     "license": {
         "identifier": "GPL-3.0",
-        "url": "https://github.com/xishang0128/sparkle/blob/main/LICENSE"
+        "url": "https://github.com/xishang0128/sparkle/blob/master/LICENSE"
     },
     "notes": [
         "TUN mode and system proxy takeover may require running Sparkle as Administrator.",

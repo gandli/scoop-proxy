@@ -39,3 +39,24 @@ jobs:
         run: |
           $env:SCOOP_HOME="$(Convert-Path '.\scoop_core')"
           .\my_bucket\bin\test.ps1
+
+  deep-test:
+    name: Deep test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Bucket
+        uses: actions/checkout@v4
+        with:
+          path: 'my_bucket'
+      - name: Checkout Scoop
+        uses: actions/checkout@v4
+        with:
+          repository: ScoopInstaller/Scoop
+          path: 'scoop_core'
+      - name: Run deep tests (liveness + autoupdate expansion)
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $env:SCOOP_HOME="$(Convert-Path '.\scoop_core')"
+          .\my_bucket\bin\deep-test.ps1
