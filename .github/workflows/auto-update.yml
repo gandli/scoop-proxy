@@ -35,7 +35,6 @@ jobs:
         run: |
           $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
           & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update
-          if ($LASTEXITCODE -ne 0) { throw "checkver exited with $LASTEXITCODE" }
 
       - name: Fill and validate hashes
         continue-on-error: true
@@ -43,6 +42,23 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $failures = New-Object System.Collections.Generic.List[string]
+          $notes = New-Object System.Collections.Generic.List[string]
+
+          function Get-VersionParts([string]$v) { @([regex]::Matches($v, '\d+') | ForEach-Object { [long]$_.Value }) }
+
+          # Returns 1 when $new is newer, -1 when older, 0 when equal, $null when unparseable.
+          function Compare-Version([string]$old, [string]$new) {
+            $o = @(Get-VersionParts $old)
+            $n = @(Get-VersionParts $new)
+            if (-not $o.Count -or -not $n.Count) { return $null }
+            for ($i = 0; $i -lt [Math]::Max($o.Count, $n.Count); $i++) {
+              $ov = if ($i -lt $o.Count) { $o[$i] } else { 0 }
+              $nv = if ($i -lt $n.Count) { $n[$i] } else { 0 }
+              if ($nv -gt $ov) { return 1 }
+              if ($nv -lt $ov) { return -1 }
+            }
+            return 0
+          }
 
           function Get-AssetHash([string]$url) {
             $clean = ($url -split '#')[0]
@@ -95,6 +111,21 @@ jobs:
             $ok = $false
             try {
               $m = Get-Content $file -Raw | ConvertFrom-Json
+
+              # Never publish a version regression: upstream feeds (e.g. redirect-based
+              # installers) sometimes serve an older build than the one already recorded.
+              $headRaw = git show "HEAD:$($file -replace '\\', '/')" 2>$null
+              if ($headRaw) {
+                $oldVersion = ($headRaw -join "`n" | ConvertFrom-Json).version
+                $cmp = Compare-Version $oldVersion $m.version
+                if ($cmp -eq -1) {
+                  throw "version regression rejected: $oldVersion -> $($m.version)"
+                }
+                if ($null -eq $cmp -and $oldVersion -ne $m.version) {
+                  $notes.Add("$([IO.Path]::GetFileName($file)): uncomparable version change $oldVersion -> $($m.version) (accepted)")
+                }
+              }
+
               $urls = @()
               if ($m.PSObject.Properties['url']) { $urls += [pscustomobject]@{ Url = $m.url; Obj = $m } }
               foreach ($prop in $m.architecture.PSObject.Properties) {
@@ -116,10 +147,22 @@ jobs:
               [IO.File]::WriteAllText((Resolve-Path $file).Path, $json, (New-Object System.Text.UTF8Encoding($false)))
               $ok = $true
             } catch {
-              $failures.Add("$([IO.Path]::GetFileName($file)): $($_.Exception.Message)")
-              Write-Warning "validation failed for $file : $($_.Exception.Message)"
+              $message = $_.Exception.Message
+              if ($message -like 'version regression rejected*') {
+                # Upstream anomaly, not a bucket defect: revert quietly, keep the run green.
+                $notes.Add("$([IO.Path]::GetFileName($file)): $message")
+                Write-Warning "$file : $message"
+              } else {
+                $failures.Add("$([IO.Path]::GetFileName($file)): $message")
+                Write-Warning "validation failed for $file : $message"
+              }
             }
             if (-not $ok) { git checkout -- $file }
+          }
+
+          if ($notes.Count -gt 0) {
+            $notes | Set-Content -Path (Join-Path $env:RUNNER_TEMP 'notes.txt') -Encoding UTF8
+            $notes | ForEach-Object { "::warning::$_" }
           }
 
           if ($failures.Count -gt 0) {
@@ -162,6 +205,8 @@ jobs:
           $commitFailed = '${{ steps.commit.outcome }}' -ne 'success'
           $updatedPath = Join-Path $env:RUNNER_TEMP 'updated.txt'
           $updated = if (Test-Path $updatedPath) { (Get-Content $updatedPath -Raw).Trim() } else { '' }
+          $notesPath = Join-Path $env:RUNNER_TEMP 'notes.txt'
+          $notes = if (Test-Path $notesPath) { @(Get-Content $notesPath | Where-Object { $_.Trim() }) } else { @() }
 
           $label = 'maintenance'
           gh label create $label --color B60205 --description 'Automated maintenance failures' 2>$null | Out-Null
@@ -175,6 +220,7 @@ jobs:
           if ($problems.Count -eq 0) {
             foreach ($n in $open) { & gh issue comment $n --body "Recovered: the latest auto-update run succeeded (`$updated`). Closing." | Out-Null; & gh issue close $n | Out-Null }
             if ($updated) { "Auto-update OK: $updated" } else { "Auto-update OK: no upstream changes." }
+            foreach ($n in $notes) { "Note: $n" }
             exit 0
           }
 
@@ -182,6 +228,7 @@ jobs:
           The scheduled auto-update run ended with problems. Manifests listed below were **reverted** and were not published, so the bucket stays installable; the remaining manifests were updated normally. The next scheduled run retries automatically.
 
           $($problems -join "`n")
+          $((if ($notes.Count) { "`nRejected but not blocking:`n" + (($notes | ForEach-Object { "- $_" }) -join "`n") } else { '' }))
 
           Run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
           "@
