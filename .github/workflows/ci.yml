@@ -90,7 +90,7 @@ jobs:
           $open = @()
           $raw = (& gh issue list --repo $repo --label $label --state open --json number,title) -join "`n"
           if ($raw.Trim()) {
-            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title -like "*$tag*" } | ForEach-Object { $_.number })
+            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title.Contains($tag) } | ForEach-Object { $_.number })
           }
 
           $green = ($env:TEST_RESULT -eq 'success' -and $env:DEEP_RESULT -eq 'success')

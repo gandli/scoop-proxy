@@ -245,13 +245,13 @@ jobs:
           $open = @()
           $raw = (& gh issue list --repo $repo --label $label --state open --json number,title) -join "`n"
           if ($raw.Trim()) {
-            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title -like "*$tag*" } | ForEach-Object { $_.number })
+            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title.Contains($tag) } | ForEach-Object { $_.number })
           }
           "Open tracker issues: $($open -join ', ')"
 
           $problems = @()
           if ($checkverFailed) { $problems += '- the `checkver` step failed - no manifests could be scanned.' }
-          if ($fillFailed) { $problems += '- the validation step crashed before it could report details (see the job log).' }
+          if ($fillFailed -and $failures.Count -eq 0) { $problems += '- the validation step crashed before it could report details (see the job log).' }
           if ($commitFailed) { $problems += '- `git push` failed - commits were not published.' }
           foreach ($f in $failures) { $problems += "- $f" }
 
