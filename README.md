@@ -76,6 +76,22 @@ scoop install proxy/bowel proxy/mihomo proxy/v2rayn
 - **hash 校验** — 优先使用上游官方校验文件或 GitHub release digest，无官方源时由 CI 下载回填。
 - **双架构** — manifest 覆盖 64bit 与 arm64（随上游发布而定）。
 
+## 自动维护
+
+本 bucket 的日常维护完全由 workflow 承担，不需要人工介入：
+
+| 环节 | 触发 | 行为 |
+|---|---|---|
+| 版本跟踪 | 每日 06:00 UTC | 运行官方 `checkver -Update`，从上游 release 改写版本与下载地址 |
+| hash 回填 | 紧接上一步 | 优先取 GitHub release asset digest，无 digest 时下载文件计算 SHA256 |
+| 变更校验 | 每个文件 | JSON 与编码校验、必填字段校验、URL 存活探测、**版本降级拒绝** |
+| 失败隔离 | 单文件失败 | 只回滚该文件（`git checkout --`），其余照常更新发布，bucket 始终可安装 |
+| 问题上报 | 有失败时 | 自动开（或追加）label 为 `maintenance` 的 issue，写明原因与 run 链接 |
+| 自动恢复 | 恢复后的首个成功 run | 自动关闭对应 issue 并留「Recovered」说明 |
+| 漂移巡检 | 每周一 04:00 UTC | 全量 CI 深度测试，发现链接失效、hash 源不可用、上游漂移即开 issue |
+
+需要人工介入的只有一种情况：某个上游彻底停了或换了发布方式，issue 里会写明是哪个 manifest——其余情况下一轮自动重试就能自愈。
+
 <p align="center">
   <img src="./assets/readme/how-it-works.svg" width="100%" alt="自动更新流程：上游 GitHub Releases 发布新版，每日 auto-update workflow 改写 manifest，CI 深度测试校验，用户通过 scoop update 获取更新">
 </p>
