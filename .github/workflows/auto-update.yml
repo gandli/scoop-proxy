@@ -34,7 +34,7 @@ jobs:
         shell: powershell
         run: |
           $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
-          & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update 2>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'checkver.log')
+          & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update *>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'checkver.log')
 
       - name: Fill and validate hashes
         id: fill
