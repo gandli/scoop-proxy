@@ -4,9 +4,13 @@ on:
   pull_request:
   push:
   workflow_dispatch:
+  schedule:
+    # Weekly drift check: catches dead upstream links and hash rot even when no manifest changed.
+    - cron: "0 4 * * 1"
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   test:
@@ -60,3 +64,52 @@ jobs:
         run: |
           $env:SCOOP_HOME="$(Convert-Path '.\scoop_core')"
           .\my_bucket\bin\deep-test.ps1
+
+  report:
+    name: Report CI outcome
+    needs: [test, deep-test]
+    if: |
+      always() && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      )
+    runs-on: windows-latest
+    steps:
+      - name: Update issue tracker
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEST_RESULT: ${{ needs.test.result }}
+          DEEP_RESULT: ${{ needs.deep-test.result }}
+        run: |
+          $label = 'maintenance'
+          gh label create $label --color B60205 --description 'Automated maintenance failures' 2>$null | Out-Null
+          $open = @(& gh issue list --label $label --state open --search '"[ci]" in:title' --jq '.[].number' 2>$null | Where-Object { $_.Trim() })
+
+          $green = ($env:TEST_RESULT -eq 'success' -and $env:DEEP_RESULT -eq 'success')
+          $run = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+
+          if ($green) {
+            foreach ($n in $open) {
+              gh issue comment $n --body "Recovered: CI is green on ``$env:GITHUB_SHA``. Closing." | Out-Null
+              gh issue close $n | Out-Null
+            }
+            "CI green ($run)"
+            exit 0
+          }
+
+          $body = @"
+          CI is failing on ``$env:GITHUB_SHA``.
+
+          - Pester suite: $env:TEST_RESULT
+          - Deep test (liveness / autoupdate expansion): $env:DEEP_RESULT
+
+          Run: $run
+          "@
+          if ($open.Count -gt 0) {
+            foreach ($n in $open) { gh issue comment $n --body $body | Out-Null }
+          } else {
+            gh issue create --title "[ci] bucket checks are failing" --label $label --body $body | Out-Null
+          }
+          "::error::CI failed — issue tracker updated ($run)"
+          exit 1

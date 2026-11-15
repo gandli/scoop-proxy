@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: auto-update
@@ -15,6 +16,8 @@ concurrency:
 jobs:
   update:
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,47 +29,115 @@ jobs:
           Remove-Item .\install-scoop.ps1
 
       - name: Update manifests
+        id: checkver
+        continue-on-error: true
         shell: powershell
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
           & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update
+          if ($LASTEXITCODE -ne 0) { throw "checkver exited with $LASTEXITCODE" }
 
-      - name: Fill hashes for updated manifests
+      - name: Fill and validate hashes
+        continue-on-error: true
         shell: powershell
         run: |
-          function Get-UrlHash([string]$url) {
-            $tmp = Join-Path $env:TEMP ([IO.Path]::GetFileName(($url -split '#')[0]))
-            Invoke-WebRequest -Uri ($url -split '#')[0] -OutFile $tmp -UserAgent 'Scoop'
-            $h = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
-            Remove-Item $tmp -Force
-            return $h
-          }
-          $changed = @(git status --porcelain bucket) | ForEach-Object { $_.Substring(3).Trim() }
-          foreach ($file in $changed) {
-            "Computing hashes for $file"
-            $m = Get-Content $file -Raw | ConvertFrom-Json
-            # top-level url (installer-style manifests, e.g. uu-remote)
-            if ($m.PSObject.Properties['url'] -and -not $m.hash) {
-              $m | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $m.url) -Force
+          $ErrorActionPreference = 'Stop'
+          $failures = New-Object System.Collections.Generic.List[string]
+
+          function Get-AssetHash([string]$url) {
+            $clean = ($url -split '#')[0]
+            # Prefer the authoritative digest published by GitHub for release assets.
+            if ($clean -match '^https://github\.com/([^/]+)/([^/]+)/releases/download/([^/]+)/(.+)$') {
+              $owner = $Matches[1]; $repo = $Matches[2]; $tag = $Matches[3]; $asset = $Matches[4]
+              $digest = & gh api "repos/$owner/$repo/releases/tags/$tag" --jq ".assets[] | select(.name==`"$asset`") | .digest" 2>$null
+              if ($digest -match '^sha256:([0-9a-fA-F]{64})$') { return $Matches[1].ToLower() }
             }
-            foreach ($prop in $m.architecture.PSObject.Properties) {
-              if (-not $prop.Value.hash) {
-                $prop.Value | Add-Member -NotePropertyName hash -NotePropertyValue (Get-UrlHash $prop.Value.url) -Force
+            # Fallback: download (retried, size + content sanity checked).
+            for ($i = 1; $i -le 3; $i++) {
+              try {
+                $tmp = Join-Path $env:TEMP ("au-" + [IO.Path]::GetFileName($clean))
+                $r = Invoke-WebRequest -Uri $clean -OutFile $tmp -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 600 -PassThru
+                $len = (Get-Item $tmp).Length
+                $head = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($tmp)[0..([Math]::Min(255, $len - 1))])
+                if ($len -lt 512) { throw "response too small ($len bytes) — probably an error page" }
+                if ($head -match '(?i)<!doctype|<html|<head>|access denied|<error') { throw "response looks like HTML, not a binary asset" }
+                $h = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
+                Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                return $h
+              } catch {
+                Write-Warning "hash attempt ${i} failed for $clean : $($_.Exception.Message)"
+                Start-Sleep -Seconds (5 * $i)
               }
             }
-            $json = ($m | ConvertTo-Json -Depth 32) + "`r`n"
-            [IO.File]::WriteAllText((Resolve-Path $file).Path, $json, (New-Object System.Text.UTF8Encoding($false)))
+            throw "could not compute hash for $clean"
+          }
+
+          function Test-UrlAlive([string]$url) {
+            $clean = ($url -split '#')[0]
+            for ($i = 1; $i -le 3; $i++) {
+              try {
+                Invoke-WebRequest -Uri $clean -Method Head -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 90 -ErrorAction Stop | Out-Null
+                return $true
+              } catch {
+                $code = 0
+                try { $code = [int]$_.Exception.Response.StatusCode } catch {}
+                # 401/403/405/429 mean the asset exists but rejects HEAD.
+                if ($code -in (401, 403, 405, 429)) { return $true }
+                if ($code -eq 404) { return $false }
+                Start-Sleep -Seconds (3 * $i)
+              }
+            }
+            return $false
+          }
+
+          $changed = @(git status --porcelain bucket | ForEach-Object { $_.Substring(3).Trim() })
+          foreach ($file in $changed) {
+            $ok = $false
+            try {
+              $m = Get-Content $file -Raw | ConvertFrom-Json
+              $urls = @()
+              if ($m.PSObject.Properties['url']) { $urls += [pscustomobject]@{ Url = $m.url; Obj = $m } }
+              foreach ($prop in $m.architecture.PSObject.Properties) {
+                $urls += [pscustomobject]@{ Url = $prop.Value.url; Obj = $prop.Value }
+              }
+              if (-not $urls) { throw "manifest has no url" }
+              foreach ($entry in $urls) {
+                if (-not $entry.Url) { throw "architecture entry has no url" }
+                "Computing hash for $file -> $($entry.Url)"
+                $h = Get-AssetHash $entry.Url
+                if ($h -notmatch '^[0-9a-f]{64}$') { throw "computed hash is not a sha256 ($h)" }
+                $entry.Obj | Add-Member -NotePropertyName hash -NotePropertyValue $h -Force
+                if (-not (Test-UrlAlive $entry.Url)) { throw "url is not reachable: $($entry.Url)" }
+              }
+              foreach ($field in 'version', 'description', 'homepage', 'license', 'checkver', 'autoupdate') {
+                if (-not $m.PSObject.Properties[$field]) { throw "missing required field '$field'" }
+              }
+              $json = ($m | ConvertTo-Json -Depth 32) + "`r`n"
+              [IO.File]::WriteAllText((Resolve-Path $file).Path, $json, (New-Object System.Text.UTF8Encoding($false)))
+              $ok = $true
+            } catch {
+              $failures.Add("$([IO.Path]::GetFileName($file)): $($_.Exception.Message)")
+              Write-Warning "validation failed for $file : $($_.Exception.Message)"
+            }
+            if (-not $ok) { git checkout -- $file }
+          }
+
+          if ($failures.Count -gt 0) {
+            $path = Join-Path $env:RUNNER_TEMP 'failures.txt'
+            $failures | Set-Content -Path $path -Encoding UTF8
+            "::error::Auto-update validation failed for $($failures.Count) manifest(s)"
+            exit 1
           }
 
       - name: Commit changes
+        id: commit
+        continue-on-error: true
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           $updated = @()
-          foreach ($file in (git status --porcelain bucket | ForEach-Object { $_.Substring(3).Trim() })) {
+          foreach ($file in @(git status --porcelain bucket | ForEach-Object { $_.Substring(3).Trim() })) {
             git add $file
             $name = [IO.Path]::GetFileNameWithoutExtension($file)
             $version = (Get-Content $file -Raw | ConvertFrom-Json).version
@@ -75,7 +146,49 @@ jobs:
           }
           if ($updated) {
             git push
-            "Updated: $($updated -join ', ')"
+            "Updated: $($updated -join ', ')" | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'updated.txt')
           } else {
             "No manifest updates available."
           }
+
+      - name: Report outcome
+        if: always()
+        shell: pwsh
+        run: |
+          $failures = @()
+          $failPath = Join-Path $env:RUNNER_TEMP 'failures.txt'
+          if (Test-Path $failPath) { $failures = @(Get-Content $failPath | Where-Object { $_.Trim() }) }
+          $checkverFailed = '${{ steps.checkver.outcome }}' -ne 'success'
+          $commitFailed = '${{ steps.commit.outcome }}' -ne 'success'
+          $updatedPath = Join-Path $env:RUNNER_TEMP 'updated.txt'
+          $updated = if (Test-Path $updatedPath) { (Get-Content $updatedPath -Raw).Trim() } else { '' }
+
+          $label = 'maintenance'
+          gh label create $label --color B60205 --description 'Automated maintenance failures' 2>$null | Out-Null
+          $open = @(& gh issue list --label $label --state open --search '"[auto-update]" in:title' --jq '.[].number' 2>$null | Where-Object { $_.Trim() })
+
+          $problems = @()
+          if ($checkverFailed) { $problems += '- `checkver` step failed — no manifests could be scanned.' }
+          if ($commitFailed) { $problems += '- `git push` failed — commits were not published.' }
+          foreach ($f in $failures) { $problems += "- $f" }
+
+          if ($problems.Count -eq 0) {
+            foreach ($n in $open) { & gh issue comment $n --body "Recovered: the latest auto-update run succeeded (`$updated`). Closing." | Out-Null; & gh issue close $n | Out-Null }
+            if ($updated) { "Auto-update OK: $updated" } else { "Auto-update OK: no upstream changes." }
+            exit 0
+          }
+
+          $body = @"
+          The scheduled auto-update run ended with problems. Manifests listed below were **reverted** and were not published, so the bucket stays installable; the remaining manifests were updated normally. The next scheduled run retries automatically.
+
+          $($problems -join "`n")
+
+          Run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
+          "@
+          if ($open.Count -gt 0) {
+            foreach ($n in $open) { & gh issue comment $n --body $body | Out-Null }
+          } else {
+            & gh issue create --title "[auto-update] scheduled run needs attention" --label $label --body $body | Out-Null
+          }
+          "::error::$($problems.Count) problem(s) reported to issue tracker"
+          exit 1
