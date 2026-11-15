@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="flow-title flow-desc">
+  <title id="flow-title">scoop-proxy 自动更新流程</title>
+  <desc id="flow-desc">上游 GitHub Releases 发布新版后，每日 auto-update workflow 自动改写 manifest 并回填 hash，CI 深度测试校验 URL 与 hash，用户通过 scoop update 获取更新。</desc>
+
+  <rect width="1200" height="260" rx="14" fill="#0B0F14"/>
+
+  <g id="box-upstream">
+    <rect x="64" y="48" width="300" height="104" rx="10" fill="#0D1117" stroke="#263041" stroke-width="1.5"/>
+    <text x="214" y="92" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700" fill="#E6EDF3">GitHub Releases</text>
+    <text x="214" y="122" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#8B949E">上游新版发布</text>
+  </g>
+
+  <line x1="364" y1="100" x2="436" y2="100" stroke="#8B949E" stroke-width="1.5"/>
+  <polygon points="436,93 450,100 436,107" fill="#8B949E"/>
+
+  <g id="box-workflow">
+    <rect x="450" y="48" width="300" height="104" rx="10" fill="#0D1117" stroke="#4ADE80" stroke-width="1.5"/>
+    <text x="600" y="92" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700" fill="#E6EDF3">auto-update</text>
+    <text x="600" y="122" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#4ADE80">每日 06:00 UTC</text>
+  </g>
+
+  <line x1="750" y1="100" x2="822" y2="100" stroke="#8B949E" stroke-width="1.5"/>
+  <polygon points="822,93 836,100 822,107" fill="#8B949E"/>
+
+  <g id="box-user">
+    <rect x="836" y="48" width="300" height="104" rx="10" fill="#0D1117" stroke="#263041" stroke-width="1.5"/>
+    <text x="986" y="92" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700" fill="#E6EDF3">你的电脑</text>
+    <text x="986" y="122" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#8B949E">scoop update *</text>
+  </g>
+
+  <text x="600" y="212" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#6E7681"><tspan fill="#4ADE80">● </tspan>CI 深度测试：URL 存活 · hash 校验 · autoupdate 展开 · shim 冲突扫描</text>
+</svg>
