@@ -12,7 +12,7 @@
     <text x="0" y="148" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" fill="#C9D1D9">一个 Scoop bucket：代理内核、GUI 客户端与</text>
     <text x="0" y="180" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" fill="#C9D1D9">WireGuard 组网工具，manifest 每日自动更新</text>
 
-    <text x="0" y="226" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17" fill="#4ADE80">● 24 APPS · DAILY AUTO-UPDATE · CI DEEP-TESTED</text>
+    <text x="0" y="226" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17" fill="#4ADE80">● 25 APPS · DAILY AUTO-UPDATE · CI DEEP-TESTED</text>
 
     <g id="route-motif" transform="translate(0 292)">
       <line x1="0" y1="0" x2="500" y2="0" stroke="#30363D" stroke-width="1.5"/>
