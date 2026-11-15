@@ -82,17 +82,24 @@ jobs:
           TEST_RESULT: ${{ needs.test.result }}
           DEEP_RESULT: ${{ needs.deep-test.result }}
         run: |
+          $repo = $env:GITHUB_REPOSITORY
+          $tag = '[ci]'
           $label = 'maintenance'
-          gh label create $label --color B60205 --description 'Automated maintenance failures' 2>$null | Out-Null
-          $open = @(& gh issue list --label $label --state open --search '"[ci]" in:title' --jq '.[].number' 2>$null | Where-Object { $_.Trim() })
+          & gh label create $label --repo $repo --color B60205 --description 'Automated maintenance failures' 2>&1 | Out-Null
+
+          $open = @()
+          $raw = (& gh issue list --repo $repo --label $label --state open --json number,title) -join "`n"
+          if ($raw.Trim()) {
+            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title -like "*$tag*" } | ForEach-Object { $_.number })
+          }
 
           $green = ($env:TEST_RESULT -eq 'success' -and $env:DEEP_RESULT -eq 'success')
           $run = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
 
           if ($green) {
             foreach ($n in $open) {
-              gh issue comment $n --body "Recovered: CI is green on ``$env:GITHUB_SHA``. Closing." | Out-Null
-              gh issue close $n | Out-Null
+              & gh issue comment $n --repo $repo --body "Recovered: CI is green on $env:GITHUB_SHA. Closing." | Out-Null
+              & gh issue close $n --repo $repo | Out-Null
             }
             "CI green ($run)"
             exit 0
@@ -107,9 +114,9 @@ jobs:
           Run: $run
           "@
           if ($open.Count -gt 0) {
-            foreach ($n in $open) { gh issue comment $n --body $body | Out-Null }
+            foreach ($n in $open) { & gh issue comment $n --repo $repo --body $body | Out-Null }
           } else {
-            gh issue create --title "[ci] bucket checks are failing" --label $label --body $body | Out-Null
+            & gh issue create --repo $repo --title "$tag bucket checks are failing" --label $label --body $body | Out-Null
           }
-          "::error::CI failed — issue tracker updated ($run)"
+          "::error::CI failed - issue tracker updated ($run)"
           exit 1

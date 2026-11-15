@@ -34,15 +34,25 @@ jobs:
         shell: powershell
         run: |
           $checkver = "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1"
-          & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update
+          & $checkver -Dir "$env:GITHUB_WORKSPACE\bucket" -Update 2>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'checkver.log')
 
       - name: Fill and validate hashes
+        id: fill
         continue-on-error: true
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
           $failures = New-Object System.Collections.Generic.List[string]
           $notes = New-Object System.Collections.Generic.List[string]
+
+          # checkver skips a manifest it cannot update (dead asset, moved release) and only logs an
+          # ERROR line; without this the bucket would silently go stale.
+          $checkverLog = Join-Path $env:RUNNER_TEMP 'checkver.log'
+          if (Test-Path $checkverLog) {
+            Get-Content $checkverLog | Where-Object { $_ -match '^\s*ERROR\s+(.+)$' } | ForEach-Object {
+              $failures.Add("checkver: " + ($_ -replace '^\s*ERROR\s+', ''))
+            }
+          }
 
           function Get-VersionParts([string]$v) { @([regex]::Matches($v, '\d+') | ForEach-Object { [long]$_.Value }) }
 
@@ -75,7 +85,7 @@ jobs:
                 $r = Invoke-WebRequest -Uri $clean -OutFile $tmp -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 600 -PassThru
                 $len = (Get-Item $tmp).Length
                 $head = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($tmp)[0..([Math]::Min(255, $len - 1))])
-                if ($len -lt 512) { throw "response too small ($len bytes) — probably an error page" }
+                if ($len -lt 512) { throw "response too small ($len bytes)  -  probably an error page" }
                 if ($head -match '(?i)<!doctype|<html|<head>|access denied|<error') { throw "response looks like HTML, not a binary asset" }
                 $h = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
                 Remove-Item $tmp -Force -ErrorAction SilentlyContinue
@@ -214,10 +224,13 @@ jobs:
         if: always()
         shell: pwsh
         run: |
+          $repo = $env:GITHUB_REPOSITORY
+          $tag = '[auto-update]'
           $failures = @()
           $failPath = Join-Path $env:RUNNER_TEMP 'failures.txt'
           if (Test-Path $failPath) { $failures = @(Get-Content $failPath | Where-Object { $_.Trim() }) }
           $checkverFailed = '${{ steps.checkver.outcome }}' -ne 'success'
+          $fillFailed = '${{ steps.fill.outcome }}' -ne 'success'
           $commitFailed = '${{ steps.commit.outcome }}' -ne 'success'
           $updatedPath = Join-Path $env:RUNNER_TEMP 'updated.txt'
           $updated = if (Test-Path $updatedPath) { (Get-Content $updatedPath -Raw).Trim() } else { '' }
@@ -225,33 +238,49 @@ jobs:
           $notes = if (Test-Path $notesPath) { @(Get-Content $notesPath | Where-Object { $_.Trim() }) } else { @() }
 
           $label = 'maintenance'
-          gh label create $label --color B60205 --description 'Automated maintenance failures' 2>$null | Out-Null
-          $open = @(& gh issue list --label $label --state open --search '"[auto-update]" in:title' --jq '.[].number' 2>$null | Where-Object { $_.Trim() })
+          & gh label create $label --repo $repo --color B60205 --description 'Automated maintenance failures' 2>&1 | Out-Null
+
+          # Track the open issue by title prefix, not by search syntax: search failures used to make
+          # recovery silently no-op. Every gh call is pinned to the repo explicitly.
+          $open = @()
+          $raw = (& gh issue list --repo $repo --label $label --state open --json number,title) -join "`n"
+          if ($raw.Trim()) {
+            $open = @($raw | ConvertFrom-Json | Where-Object { $_.title -like "*$tag*" } | ForEach-Object { $_.number })
+          }
+          "Open tracker issues: $($open -join ', ')"
 
           $problems = @()
-          if ($checkverFailed) { $problems += '- `checkver` step failed — no manifests could be scanned.' }
-          if ($commitFailed) { $problems += '- `git push` failed — commits were not published.' }
+          if ($checkverFailed) { $problems += '- the `checkver` step failed - no manifests could be scanned.' }
+          if ($fillFailed) { $problems += '- the validation step crashed before it could report details (see the job log).' }
+          if ($commitFailed) { $problems += '- `git push` failed - commits were not published.' }
           foreach ($f in $failures) { $problems += "- $f" }
 
           if ($problems.Count -eq 0) {
-            foreach ($n in $open) { & gh issue comment $n --body "Recovered: the latest auto-update run succeeded (`$updated`). Closing." | Out-Null; & gh issue close $n | Out-Null }
+            foreach ($n in $open) {
+              & gh issue comment $n --repo $repo --body "Recovered: the latest auto-update run succeeded. Closing." | Out-Null
+              & gh issue close $n --repo $repo | Out-Null
+            }
             if ($updated) { "Auto-update OK: $updated" } else { "Auto-update OK: no upstream changes." }
             foreach ($n in $notes) { "Note: $n" }
             exit 0
           }
 
+          $noteBlock = ''
+          if ($notes.Count) { $noteBlock = "`nRejected but not blocking:`n" + (($notes | ForEach-Object { "- $_" }) -join "`n") }
           $body = @"
           The scheduled auto-update run ended with problems. Manifests listed below were **reverted** and were not published, so the bucket stays installable; the remaining manifests were updated normally. The next scheduled run retries automatically.
 
           $($problems -join "`n")
-          $((if ($notes.Count) { "`nRejected but not blocking:`n" + (($notes | ForEach-Object { "- $_" }) -join "`n") } else { '' }))
+          $noteBlock
 
           Run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
           "@
           if ($open.Count -gt 0) {
-            foreach ($n in $open) { & gh issue comment $n --body $body | Out-Null }
+            foreach ($n in $open) { & gh issue comment $n --repo $repo --body $body | Out-Null }
+            "Commented on issue(s): $($open -join ', ')"
           } else {
-            & gh issue create --title "[auto-update] scheduled run needs attention" --label $label --body $body | Out-Null
+            $created = (& gh issue create --repo $repo --title "$tag scheduled run needs attention" --label $label --body $body) -join "`n"
+            "Created issue: $created"
           }
-          "::error::$($problems.Count) problem(s) reported to issue tracker"
+          "::error::$($problems.Count) problem(s) reported to the issue tracker"
           exit 1
