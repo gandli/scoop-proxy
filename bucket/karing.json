@@ -1,5 +1,5 @@
 {
-    "version": "1.2.26.2931",
+    "version": "1.2.26.2933",
     "description": "A cross-platform proxy client compatible with Clash, Singbox and Shadowrocket subscription formats.",
     "homepage": "https://github.com/KaringX/karing",
     "license": {
@@ -11,8 +11,8 @@
     ],
     "architecture": {
         "64bit": {
-            "url": "https://github.com/KaringX/karing/releases/download/v1.2.26.2931/karing_1.2.26.2931_windows_x64.zip",
-            "hash": "fcd7bcdefd23f43da0b85c294168b86d620f11b7d46e06533bfc4fb49b4587c6"
+            "url": "https://github.com/KaringX/karing/releases/download/v1.2.26.2933/karing_1.2.26.2933_windows_x64.zip",
+            "hash": "01048622e8ba84cdd797604b44422ecdec96b14966b577cb671be36ebf488e96"
         }
     },
     "bin": "karing.exe",

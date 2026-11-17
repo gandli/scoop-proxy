@@ -70,12 +70,41 @@ jobs:
             return 0
           }
 
+          # Windows PowerShell 5.1 turns a native command's stderr into a terminating error whenever
+          # $ErrorActionPreference is 'Stop', so a benign non-zero exit (unknown tag, path not in HEAD)
+          # would abort the whole manifest instead of falling through to the next strategy.
+          function Invoke-Native([string]$exe, [string[]]$arguments) {
+            $previous = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+              $output = & $exe @arguments 2>$null
+              if ($LASTEXITCODE -ne 0) { return $null }
+              return ($output -join "`n")
+            } finally {
+              $ErrorActionPreference = $previous
+            }
+          }
+
+          # Read the digest out of the JSON payload instead of filtering it with --jq. PowerShell 5.1
+          # drops the inner double quotes from arguments handed to native executables, so any jq
+          # expression carrying a string literal reaches gojq unquoted and fails to parse.
+          function Get-GitHubAssetDigest([string]$owner, [string]$repo, [string]$tag, [string]$asset) {
+            $json = Invoke-Native 'gh' @('api', "repos/$owner/$repo/releases/tags/$tag")
+            if (-not $json) { return $null }
+            try {
+              $release = $json | ConvertFrom-Json
+              $match = @($release.assets | Where-Object { $_.name -eq $asset })
+              if ($match.Count -gt 0 -and $match[0].digest) { return [string]$match[0].digest }
+            } catch { }
+            return $null
+          }
+
           function Get-AssetHash([string]$url) {
             $clean = ($url -split '#')[0]
             # Prefer the authoritative digest published by GitHub for release assets.
             if ($clean -match '^https://github\.com/([^/]+)/([^/]+)/releases/download/([^/]+)/(.+)$') {
               $owner = $Matches[1]; $repo = $Matches[2]; $tag = $Matches[3]; $asset = $Matches[4]
-              $digest = & gh api "repos/$owner/$repo/releases/tags/$tag" --jq ".assets[] | select(.name==`"$asset`") | .digest" 2>$null
+              $digest = Get-GitHubAssetDigest $owner $repo $tag $asset
               if ($digest -match '^sha256:([0-9a-fA-F]{64})$') { return $Matches[1].ToLower() }
             }
             # Fallback: download (retried, size + content sanity checked).
@@ -102,14 +131,28 @@ jobs:
             $clean = ($url -split '#')[0]
             for ($i = 1; $i -le 3; $i++) {
               try {
-                Invoke-WebRequest -Uri $clean -Method Head -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 90 -ErrorAction Stop | Out-Null
+                # -UseBasicParsing is required: without it Windows PowerShell 5.1 parses via the IE
+                # engine and throws a NullReferenceException on redirected HEAD responses.
+                Invoke-WebRequest -Uri $clean -Method Head -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 90 -UseBasicParsing -ErrorAction Stop | Out-Null
                 return $true
               } catch {
                 $code = 0
                 try { $code = [int]$_.Exception.Response.StatusCode } catch {}
-                # 401/403/405/429 mean the asset exists but rejects HEAD.
-                if ($code -in (401, 403, 405, 429)) { return $true }
-                if ($code -eq 404) { return $false }
+                # Only 404/410 mean the asset is really gone. Release URLs redirect to a CDN, and a
+                # rejected probe (401/403/405/429), a CDN 5xx or a dropped connection must not revert
+                # a healthy manifest.
+                if ($code -eq 404 -or $code -eq 410) { return $false }
+                if ($code -ne 0) { return $true }
+                # No status at all: prove reachability with a one-byte ranged GET.
+                try {
+                  Invoke-WebRequest -Uri $clean -Method Get -Headers @{ Range = 'bytes=0-0' } -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 90 -UseBasicParsing -ErrorAction Stop | Out-Null
+                  return $true
+                } catch {
+                  $getCode = 0
+                  try { $getCode = [int]$_.Exception.Response.StatusCode } catch {}
+                  if ($getCode -eq 404 -or $getCode -eq 410) { return $false }
+                  if ($getCode -ne 0) { return $true }
+                }
                 Start-Sleep -Seconds (3 * $i)
               }
             }
@@ -137,10 +180,10 @@ jobs:
 
               # Never publish a version regression: upstream feeds (e.g. redirect-based
               # installers) sometimes serve an older build than the one already recorded.
-              $headRaw = git show "HEAD:$($file -replace '\\', '/')" 2>$null
+              $headRaw = Invoke-Native 'git' @('show', ('HEAD:' + ($file -replace '\\', '/')))
               $oldVersion = $null
               if ($headRaw) {
-                try { $oldVersion = ($headRaw -join "`n" | ConvertFrom-Json).version } catch { $oldVersion = $null }
+                try { $oldVersion = ($headRaw | ConvertFrom-Json).version } catch { $oldVersion = $null }
               }
               if ($oldVersion) {
                 $cmp = Compare-Version $oldVersion $m.version
