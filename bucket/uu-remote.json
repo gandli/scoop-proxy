@@ -1,50 +1,52 @@
 {
-    "version": "4.47.1.5286",
-    "description": "NetEase UU Remote (网易UU远程) - remote desktop access and control tool.",
-    "homepage": "https://uuyc.163.com/",
-    "license": "Freeware",
-    "notes": [
-        "The app is installed by the vendor NSIS installer into 'C:\\Program Files\\Netease\\GameViewer' and registers the GameViewerService system service.",
-        "The app UI requires the Microsoft Edge WebView2 Runtime."
-    ],
-    "url": "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd#/UURemote_Setup.exe",
-    "hash": "e095939fc410e7a092b2ccc7b0350cdd8db6ab61f02e215fcb47bd4c8ec3b8bd",
-    "installer": {
-        "script": [
-            "if (!(is_admin)) {",
-            "    error 'Administrator rights are required to install $app.'",
-            "    break",
-            "}",
-            "",
-            "Start-Process \"$dir\\UURemote_Setup.exe\" -ArgumentList '/S' -Wait",
-            "",
-            "# the postinstall script automatically launches the app",
-            "Start-Sleep -Seconds 2",
-            "Get-Process | Where-Object { $_.name -match '^GameViewer' } | ForEach-Object { Stop-Process -Id $_.Id -Force }"
-        ]
-    },
-    "uninstaller": {
-        "script": [
-            "if (!(is_admin)) {",
-            "    error 'Administrator rights are required to uninstall $app.'",
-            "    break",
-            "}",
-            "",
-            "Stop-Process -Name 'GameViewer*' -Force -ErrorAction SilentlyContinue",
-            "Start-Process \"$env:ProgramFiles\\Netease\\GameViewer\\Uninstall.exe\" -ArgumentList '/S' -Wait"
-        ]
-    },
-    "checkver": {
-        "script": [
-            "$req = [System.Net.HttpWebRequest]::Create('https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd')",
-            "$req.AllowAutoRedirect = $false",
-            "$req.Timeout = 30000",
-            "$resp = $req.GetResponse()",
-            "$loc = $resp.Headers['Location']",
-            "$resp.Close()",
-            "Write-Output $loc"
-        ],
-        "regex": "UURemote_Setup_([\\d.]+)_"
-    },
-    "autoupdate": {}
+    "version":  "4.48.1.5606",
+    "description":  "NetEase UU Remote (ç½‘æ˜“UUè¿œç¨‹) - remote desktop access and control tool.",
+    "homepage":  "https://uuyc.163.com/",
+    "license":  "Freeware",
+    "notes":  [
+                  "The app is installed by the vendor NSIS installer into \u0027C:\\Program Files\\Netease\\GameViewer\u0027 and registers the GameViewerService system service.",
+                  "The app UI requires the Microsoft Edge WebView2 Runtime."
+              ],
+    "url":  "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd#/UURemote_Setup.exe",
+    "installer":  {
+                      "script":  [
+                                     "if (!(is_admin)) {",
+                                     "    error \u0027Administrator rights are required to install $app.\u0027",
+                                     "    break",
+                                     "}",
+                                     "",
+                                     "Start-Process \"$dir\\UURemote_Setup.exe\" -ArgumentList \u0027/S\u0027 -Wait",
+                                     "",
+                                     "# the postinstall script automatically launches the app",
+                                     "Start-Sleep -Seconds 2",
+                                     "Get-Process | Where-Object { $_.name -match \u0027^GameViewer\u0027 } | ForEach-Object { Stop-Process -Id $_.Id -Force }"
+                                 ]
+                  },
+    "uninstaller":  {
+                        "script":  [
+                                       "if (!(is_admin)) {",
+                                       "    error \u0027Administrator rights are required to uninstall $app.\u0027",
+                                       "    break",
+                                       "}",
+                                       "",
+                                       "Stop-Process -Name \u0027GameViewer*\u0027 -Force -ErrorAction SilentlyContinue",
+                                       "Start-Process \"$env:ProgramFiles\\Netease\\GameViewer\\Uninstall.exe\" -ArgumentList \u0027/S\u0027 -Wait"
+                                   ]
+                    },
+    "checkver":  {
+                     "script":  [
+                                    "$req = [System.Net.HttpWebRequest]::Create(\u0027https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd\u0027)",
+                                    "$req.AllowAutoRedirect = $false",
+                                    "$req.Timeout = 30000",
+                                    "$resp = $req.GetResponse()",
+                                    "$loc = $resp.Headers[\u0027Location\u0027]",
+                                    "$resp.Close()",
+                                    "Write-Output $loc"
+                                ],
+                     "regex":  "UURemote_Setup_([\\d.]+)_"
+                 },
+    "autoupdate":  {
+
+                   },
+    "hash":  "44d256737c33ec8ea49c8e0115223dd3a7a94b0cdd760bbaefccba4ea55af4c1"
 }
