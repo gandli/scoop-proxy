@@ -99,7 +99,7 @@ jobs:
             return $null
           }
 
-          function Get-AssetHash([string]$url) {
+          function Get-AssetHash([string]$url, [string]$expectedVersion = $null) {
             $clean = ($url -split '#')[0]
             # Prefer the authoritative digest published by GitHub for release assets.
             if ($clean -match '^https://github\.com/([^/]+)/([^/]+)/releases/download/([^/]+)/(.+)$') {
@@ -110,12 +110,24 @@ jobs:
             # Fallback: download (retried, size + content sanity checked).
             for ($i = 1; $i -le 3; $i++) {
               try {
-                $tmp = Join-Path $env:TEMP ("au-" + [IO.Path]::GetFileName($clean))
+                # Build the temp name from the URL path only. Using GetFileName on the full URL
+                # keeps '?channel=gwqd' in the name, which Windows rejects as an illegal character.
+                $urlPath = ([Uri]$clean).AbsolutePath
+                $leaf = [IO.Path]::GetFileName($urlPath)
+                if (-not $leaf) { $leaf = [guid]::NewGuid().ToString('N') }
+                $tmp = Join-Path $env:TEMP ("au-" + $leaf)
                 $r = Invoke-WebRequest -Uri $clean -OutFile $tmp -UserAgent 'Mozilla/5.0 (compatible; Scoop)' -MaximumRedirection 5 -TimeoutSec 600 -UseBasicParsing -PassThru
                 $len = (Get-Item $tmp).Length
                 $head = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($tmp)[0..([Math]::Min(255, $len - 1))])
                 if ($len -lt 512) { throw "response too small ($len bytes)  -  probably an error page" }
                 if ($head -match '(?i)<!doctype|<html|<head>|access denied|<error') { throw "response looks like HTML, not a binary asset" }
+                $finalUrl = $r.BaseResponse.ResponseUri.AbsoluteUri
+                if ($expectedVersion -and $finalUrl -ne $clean -and $finalUrl -match '(?i)(?:_|/)v?(\d+\.\d+(?:\.\d+){1,3})(?:[_\.+-]|$)') {
+                  $build = $Matches[1]
+                  if ($build -ne $expectedVersion) {
+                    throw "asset build $build does not match manifest version $expectedVersion (final URL: $finalUrl)"
+                  }
+                }
                 $h = (Get-FileHash $tmp -Algorithm SHA256).Hash.ToLower()
                 Remove-Item $tmp -Force -ErrorAction SilentlyContinue
                 return $h
@@ -204,7 +216,7 @@ jobs:
               foreach ($entry in $urls) {
                 if (-not $entry.Url) { throw "architecture entry has no url" }
                 "Computing hash for $file -> $($entry.Url)"
-                $h = Get-AssetHash $entry.Url
+                $h = Get-AssetHash $entry.Url $m.version
                 if ($h -notmatch '^[0-9a-f]{64}$') { throw "computed hash is not a sha256 ($h)" }
                 $entry.Obj | Add-Member -NotePropertyName hash -NotePropertyValue $h -Force
                 if (-not (Test-UrlAlive $entry.Url)) { throw "url is not reachable: $($entry.Url)" }
