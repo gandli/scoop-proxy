@@ -9,7 +9,7 @@
   <a href="https://github.com/gandli/scoop-proxy/actions/workflows/auto-update.yml"><img src="https://github.com/gandli/scoop-proxy/actions/workflows/auto-update.yml/badge.svg" alt="Auto Update status"></a>
 </p>
 
-一个 [Scoop](https://scoop.sh) bucket，收录 25 个代理工具：mihomo / sing-box / Xray / v2ray 内核，各类 GUI 客户端，以及 Tailscale、NetBird 等组网软件。所有 manifest 由每日定时工作流自动跟踪上游版本，无需手动维护。
+一个 [Scoop](https://scoop.sh) bucket，收录 26 个代理工具：mihomo / sing-box / Xray / v2ray 内核，各类 GUI 客户端，以及 Tailscale、NetBird 等组网软件。所有 manifest 由每日定时工作流自动跟踪上游版本，无需手动维护。
 
 ## 快速开始
 
@@ -68,6 +68,7 @@ scoop install proxy/bowel proxy/mihomo proxy/v2rayn
 | [NetBird](https://netbird.io/) | 支持 SSO/MFA 的 WireGuard overlay 网络 |
 | [UU Remote 网易UU远程](https://uuyc.163.com/) | 网易远程桌面访问与控制工具（需管理员权限） |
 | [RustDesk](https://github.com/rustdesk/rustdesk) | 开源远程桌面软件（Rust 编写），支持自建服务器 |
+| [Kiri](https://github.com/libracoder/kiri) | 轻量容器运行时，内置本地域名与 Ngrok 替代隧道（需 WSL 2） |
 
 ## 特性
 

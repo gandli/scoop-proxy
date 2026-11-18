@@ -46,7 +46,5 @@
         ],
         "regex": "UURemote_Setup_([\\d.]+)_"
     },
-    "autoupdate": {
-        "url": "https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd#/UURemote_Setup.exe"
-    }
+    "autoupdate": {}
 }
