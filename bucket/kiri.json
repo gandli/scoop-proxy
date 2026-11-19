@@ -1,40 +1,40 @@
 {
-    "version": "0.2.1",
-    "description": "A tiny, fast container runtime for Windows (WSL 2), macOS and Linux, with local domains and a built-in Ngrok alternative.",
-    "homepage": "https://github.com/libracoder/kiri",
-    "license": "Apache-2.0",
-    "notes": [
-        "Kiri needs WSL 2. Launch kiri-win.exe (Kiri in the Start menu) once to complete first-run setup; Windows may ask for administrator rights to enable Virtual Machine Platform.",
-        "The kiri CLI talks to the local Kiri GUI, so keep Kiri running before using 'kiri run', 'kiri ps', etc."
-    ],
-    "architecture": {
-        "64bit": {
-            "url": "https://github.com/libracoder/kiri/releases/download/v0.2.1/Kiri-0.2.1-x86_64.msi",
-            "hash": "784314423a5f4723415d7ca08799d3700399a8e3f9d8d026b18a5b15cdfeccf5",
-            "extract_dir": "LocalApp\\Kiri"
-        },
-        "arm64": {
-            "url": "https://github.com/libracoder/kiri/releases/download/v0.2.1/Kiri-0.2.1-arm64.msi",
-            "hash": "b5c52546eaf2e667e1a3dacb2ad400c051eb1e7832345c33d831c3c315cdb36e",
-            "extract_dir": "LocalApp\\Kiri"
-        }
-    },
-    "bin": "bin\\kiri.exe",
-    "shortcuts": [
-        [
-            "kiri-win.exe",
-            "Kiri"
-        ]
-    ],
-    "checkver": "github",
-    "autoupdate": {
-        "architecture": {
-            "64bit": {
-                "url": "https://github.com/libracoder/kiri/releases/download/v$version/Kiri-$version-x86_64.msi"
-            },
-            "arm64": {
-                "url": "https://github.com/libracoder/kiri/releases/download/v$version/Kiri-$version-arm64.msi"
-            }
-        }
-    }
+    "version":  "0.2.2",
+    "description":  "A tiny, fast container runtime for Windows (WSL 2), macOS and Linux, with local domains and a built-in Ngrok alternative.",
+    "homepage":  "https://github.com/libracoder/kiri",
+    "license":  "Apache-2.0",
+    "notes":  [
+                  "Kiri needs WSL 2. Launch kiri-win.exe (Kiri in the Start menu) once to complete first-run setup; Windows may ask for administrator rights to enable Virtual Machine Platform.",
+                  "The kiri CLI talks to the local Kiri GUI, so keep Kiri running before using \u0027kiri run\u0027, \u0027kiri ps\u0027, etc."
+              ],
+    "architecture":  {
+                         "64bit":  {
+                                       "url":  "https://github.com/libracoder/kiri/releases/download/v0.2.2/Kiri-0.2.2-x86_64.msi",
+                                       "extract_dir":  "LocalApp\\Kiri",
+                                       "hash":  "647128f8ca4831020da683f4301f16238d3417bc01519def687073e036271ca8"
+                                   },
+                         "arm64":  {
+                                       "url":  "https://github.com/libracoder/kiri/releases/download/v0.2.2/Kiri-0.2.2-arm64.msi",
+                                       "extract_dir":  "LocalApp\\Kiri",
+                                       "hash":  "6f759006c63a8be1d370b234062bf496b2799560a8f23c10f60eeaff2320dcd7"
+                                   }
+                     },
+    "bin":  "bin\\kiri.exe",
+    "shortcuts":  [
+                      [
+                          "kiri-win.exe",
+                          "Kiri"
+                      ]
+                  ],
+    "checkver":  "github",
+    "autoupdate":  {
+                       "architecture":  {
+                                            "64bit":  {
+                                                          "url":  "https://github.com/libracoder/kiri/releases/download/v$version/Kiri-$version-x86_64.msi"
+                                                      },
+                                            "arm64":  {
+                                                          "url":  "https://github.com/libracoder/kiri/releases/download/v$version/Kiri-$version-arm64.msi"
+                                                      }
+                                        }
+                   }
 }
