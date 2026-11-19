@@ -1,36 +1,34 @@
 {
-    "version": "1.2.26.2933",
-    "description": "A cross-platform proxy client compatible with Clash, Singbox and Shadowrocket subscription formats.",
-    "homepage": "https://github.com/KaringX/karing",
-    "license": {
-        "identifier": "GPL-3.0-or-later",
-        "url": "https://github.com/KaringX/karing/blob/main/LICENSE.md"
-    },
-    "notes": [
-        "TUN mode and system proxy takeover may require running karing as Administrator."
-    ],
-    "architecture": {
-        "64bit": {
-            "url": "https://github.com/KaringX/karing/releases/download/v1.2.26.2933/karing_1.2.26.2933_windows_x64.zip",
-            "hash": "01048622e8ba84cdd797604b44422ecdec96b14966b577cb671be36ebf488e96"
-        }
-    },
-    "bin": "karing.exe",
-    "shortcuts": [
-        [
-            "karing.exe",
-            "Karing"
-        ]
-    ],
-    "checkver": {
-        "url": "https://api.github.com/repos/KaringX/karing/releases/latest",
-        "regex": "\"name\":\\s*\"karing_([\\d.]+)_windows_x64\\.zip\"[\\s\\S]*?\"digest\":\\s*\"sha256:([0-9a-f]{64})\""
-    },
-    "autoupdate": {
-        "architecture": {
-            "64bit": {
-                "url": "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip"
-            }
-        }
-    }
+    "version":  "1.2.26.2934",
+    "description":  "A cross-platform proxy client compatible with Clash, Singbox and Shadowrocket subscription formats.",
+    "homepage":  "https://github.com/KaringX/karing",
+    "license":  {
+                    "identifier":  "GPL-3.0-or-later",
+                    "url":  "https://github.com/KaringX/karing/blob/main/LICENSE.md"
+                },
+    "notes":  "TUN mode and system proxy takeover may require running karing as Administrator.",
+    "architecture":  {
+                         "64bit":  {
+                                       "url":  "https://github.com/KaringX/karing/releases/download/v1.2.26.2934/karing_1.2.26.2934_windows_x64.zip",
+                                       "hash":  "2ae3000741d66656aec2e97bd8181b53522f5a040081201a67d0432e606ddc0e"
+                                   }
+                     },
+    "bin":  "karing.exe",
+    "shortcuts":  [
+                      [
+                          "karing.exe",
+                          "Karing"
+                      ]
+                  ],
+    "checkver":  {
+                     "url":  "https://api.github.com/repos/KaringX/karing/releases/latest",
+                     "regex":  "\"name\":\\s*\"karing_([\\d.]+)_windows_x64\\.zip\"[\\s\\S]*?\"digest\":\\s*\"sha256:([0-9a-f]{64})\""
+                 },
+    "autoupdate":  {
+                       "architecture":  {
+                                            "64bit":  {
+                                                          "url":  "https://github.com/KaringX/karing/releases/download/v$version/karing_$version_windows_x64.zip"
+                                                      }
+                                        }
+                   }
 }
