@@ -1,6 +1,6 @@
 {
-    "version":  "4.48.1.5606",
-    "description":  "NetEase UU Remote (ç½‘æ˜“UUè¿œç¨‹) - remote desktop access and control tool.",
+    "version":  "4.48.2.5754",
+    "description":  "NetEase UU Remote (Ã§Â½â€˜Ã¦Ëœâ€œUUÃ¨Â¿Å“Ã§Â¨â€¹) - remote desktop access and control tool.",
     "homepage":  "https://uuyc.163.com/",
     "license":  "Freeware",
     "notes":  [
@@ -48,5 +48,5 @@
     "autoupdate":  {
 
                    },
-    "hash":  "44d256737c33ec8ea49c8e0115223dd3a7a94b0cdd760bbaefccba4ea55af4c1"
+    "hash":  "951a8d695c7d1b90fbfe151e9e4f78c8088bed1df77401b2a1c308788bfe4ea1"
 }
