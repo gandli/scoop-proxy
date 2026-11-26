@@ -1,5 +1,5 @@
 {
-    "version":  "2.4.0",
+    "version":  "2.4.1",
     "description":  "Husi is a non-professional proxy-set-based multiplatform proxy tool set and dashboard.",
     "homepage":  "https://github.com/xchacha20-poly1305/husi",
     "license":  {
@@ -13,11 +13,11 @@
               ],
     "architecture":  {
                          "64bit":  {
-                                       "url":  "https://github.com/xchacha20-poly1305/husi/releases/download/v2.4.0/fr.husi-2.4.0-windows-amd64-jbr.zip",
-                                       "hash":  "bd1cfc45f763233809b068c17a8e5cb07c780533c9d0c264d1b9f3a22019984e"
+                                       "url":  "https://github.com/xchacha20-poly1305/husi/releases/download/v2.4.1/fr.husi-2.4.1-windows-amd64-jbr.zip",
+                                       "hash":  "d1ef4be8b30ee8f3a20dcb9b2172b968480bfa94044b44e9ddcf1b85bdc0a715"
                                    }
                      },
-    "extract_dir":  "Husi-2.4.0-windows-amd64-jbr",
+    "extract_dir":  "Husi-2.4.1-windows-amd64-jbr",
     "bin":  "Husi.exe",
     "shortcuts":  [
                       [
