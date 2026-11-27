@@ -1,55 +1,55 @@
 {
-    "version": "1.14.4",
-    "description": "The universal proxy platform.",
-    "homepage": "https://github.com/SagerNet/sing-box",
-    "license": {
-        "identifier": "GPL-3.0-or-later",
-        "url": "https://github.com/SagerNet/sing-box/blob/testing/LICENSE"
-    },
-    "notes": [
-        "If you want to use TUN mode, please run sing-box with administrator privileges.",
-        "Your configuration and cache files are persisted in '$persist_dir'.",
-        "You can run with a directory of configs using: 'sing-box run -C $persist_dir\\config.d'"
-    ],
-    "pre_install": [
-        "if (!(Test-Path \"$persist_dir\")) { New-Item -Path \"$persist_dir\" -ItemType Directory | Out-Null }",
-        "if (!(Test-Path \"$persist_dir\\config.json\")) {",
-        "    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)",
-        "    [System.IO.File]::WriteAllText(\"$persist_dir\\config.json\", \"{}\", $utf8NoBom)",
-        "}"
-    ],
-    "architecture": {
-        "64bit": {
-            "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.4/sing-box-1.14.4-windows-amd64.zip",
-            "hash": "99185d75d314a07dbba4a130c8ad986cbeb629a07927975636b341ca61f991df",
-            "extract_dir": "sing-box-1.14.4-windows-amd64",
-            "bin": "sing-box.exe"
-        },
-        "arm64": {
-            "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.4/sing-box-1.14.4-windows-arm64.zip",
-            "hash": "8cd0a4d0cd8cd480be5731ac31f17038969a42d12add9feb6e031fd43d85bbae",
-            "extract_dir": "sing-box-1.14.4-windows-arm64",
-            "bin": "sing-box.exe"
-        }
-    },
-    "bin": "sing-box.exe",
-    "persist": [
-        "config",
-        "config.d",
-        "config.json",
-        "cache.db"
-    ],
-    "checkver": "github",
-    "autoupdate": {
-        "architecture": {
-            "64bit": {
-                "url": "https://github.com/SagerNet/sing-box/releases/download/v$version/sing-box-$version-windows-amd64.zip",
-                "extract_dir": "sing-box-$version-windows-amd64"
-            },
-            "arm64": {
-                "url": "https://github.com/SagerNet/sing-box/releases/download/v$version/sing-box-$version-windows-arm64.zip",
-                "extract_dir": "sing-box-$version-windows-arm64"
-            }
-        }
-    }
+    "version":  "1.14.5",
+    "description":  "The universal proxy platform.",
+    "homepage":  "https://github.com/SagerNet/sing-box",
+    "license":  {
+                    "identifier":  "GPL-3.0-or-later",
+                    "url":  "https://github.com/SagerNet/sing-box/blob/testing/LICENSE"
+                },
+    "notes":  [
+                  "If you want to use TUN mode, please run sing-box with administrator privileges.",
+                  "Your configuration and cache files are persisted in \u0027$persist_dir\u0027.",
+                  "You can run with a directory of configs using: \u0027sing-box run -C $persist_dir\\config.d\u0027"
+              ],
+    "pre_install":  [
+                        "if (!(Test-Path \"$persist_dir\")) { New-Item -Path \"$persist_dir\" -ItemType Directory | Out-Null }",
+                        "if (!(Test-Path \"$persist_dir\\config.json\")) {",
+                        "    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)",
+                        "    [System.IO.File]::WriteAllText(\"$persist_dir\\config.json\", \"{}\", $utf8NoBom)",
+                        "}"
+                    ],
+    "architecture":  {
+                         "64bit":  {
+                                       "url":  "https://github.com/SagerNet/sing-box/releases/download/v1.14.5/sing-box-1.14.5-windows-amd64.zip",
+                                       "extract_dir":  "sing-box-1.14.5-windows-amd64",
+                                       "bin":  "sing-box.exe",
+                                       "hash":  "b935f7b38bffcc1f600165e79e5d0c2d58b547942ac1b6cf61a27b5447c089e7"
+                                   },
+                         "arm64":  {
+                                       "url":  "https://github.com/SagerNet/sing-box/releases/download/v1.14.5/sing-box-1.14.5-windows-arm64.zip",
+                                       "extract_dir":  "sing-box-1.14.5-windows-arm64",
+                                       "bin":  "sing-box.exe",
+                                       "hash":  "6c309af5981d40517a84144cb0df8434779ae98774846b04923feefbc74af9d4"
+                                   }
+                     },
+    "bin":  "sing-box.exe",
+    "persist":  [
+                    "config",
+                    "config.d",
+                    "config.json",
+                    "cache.db"
+                ],
+    "checkver":  "github",
+    "autoupdate":  {
+                       "architecture":  {
+                                            "64bit":  {
+                                                          "url":  "https://github.com/SagerNet/sing-box/releases/download/v$version/sing-box-$version-windows-amd64.zip",
+                                                          "extract_dir":  "sing-box-$version-windows-amd64"
+                                                      },
+                                            "arm64":  {
+                                                          "url":  "https://github.com/SagerNet/sing-box/releases/download/v$version/sing-box-$version-windows-arm64.zip",
+                                                          "extract_dir":  "sing-box-$version-windows-arm64"
+                                                      }
+                                        }
+                   }
 }
